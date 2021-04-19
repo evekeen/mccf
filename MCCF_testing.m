@@ -32,8 +32,8 @@ im_sz      = [720 1280];
 
 %   HoG parameters. Pleae refer to "calc_hog" function for more details.
 nbins      = 5;
-cell_size  = [5 5];
-block_size = [5 5];
+cell_size  = [6 6];
+block_size = [3 3];
 
 %   Cosine window applied on images to reduce the high frequenceis
 %   caused by image borders.
@@ -57,7 +57,7 @@ filt_f = fft2(filt);
 proc_time = 0;
 
 %   testing loop starts here!
-for i = 1:10
+for i = 6:10
     
     tic;
     %   loading images
@@ -109,7 +109,8 @@ for i = 1:10
     imagesc(org_im); colormap gray;axis image ; axis off;title ('image');             
     hold on; plot(96,40, 'ob','MarkerSize',10,'LineWidth',3);
     hold on; plot(y,x, '*r','MarkerSize',10,'LineWidth',2);
-    pause(.05);
+%     pause(.05);
+    pause;
     
 %     aviobj = addframe(aviobj,gcf); 
     

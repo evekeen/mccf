@@ -16,7 +16,7 @@ clear all; close all; clc;
 %---------------------------------------------------
 
 addpath('helper functions/');
-imgsPath = 'kolya-training/';
+imgsPath = 'kolya-frames/';
 imgs     = dir(fullfile(imgsPath, '*.jpg'));
 
 %---------------------------------------------------
@@ -29,16 +29,26 @@ imgs     = dir(fullfile(imgsPath, '*.jpg'));
 %   respectively.
 
 im_sz      = [720 1280];
+% target_poss = [
+%     342.0, 592.67;
+%     327, 578.99998;
+%     313.67, 569.33;
+%     299.33, 561.33;
+%     286.33, 553.33
+% ];
+
 target_poss = [
-    [342.0, 592.67]
-    [327, 578.99998]
-    [313.67, 569.33]
+    360, 613
+    343, 594;
+    327, 580;
+    312, 570;
+    299, 562
 ];
 
 %   HoG parameters. Pleae refer to "calc_hog" function for more details.
 nbins      = 5;
-cell_size  = [5 5];
-block_size = [5 5];
+cell_size  = [6 6];
+block_size = [3 3];
 
 %   MCCF Gaussian sigma and lambda. Please refer to the reference paper for
 %   more details.
@@ -60,11 +70,13 @@ cos_window = get_cosine_window(im_sz,2);
 
 %   (1) computing auto- and cross- correlation energies, xxF and xyF
 
-for i = 1:3
+for i = 1:5
     
     %   loading images
     im = imread([imgsPath imgs(i).name]);
-    target_pos = target_pos[i];
+%     imshow(im);
+%     pause;
+    target_pos = target_poss(i,:);
     
     %   RGB to Gray
     if size(im,3) == 3
