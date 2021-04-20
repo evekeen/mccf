@@ -17,6 +17,9 @@ clear all; close all; clc;
 
 addpath('helper functions/');
 imgsPath = 'kolya-frames/';
+im_sz      = [720 1280];
+% im_sz      = [128 128];
+% imgsPath = 'multiPie Face Dataset/';
 imgs     = dir(fullfile(imgsPath, '*.jpg'));
 
 %---------------------------------------------------
@@ -28,7 +31,6 @@ imgs     = dir(fullfile(imgsPath, '*.jpg'));
 %   where the left and right eye are located at [40 32] and [40 96],
 %   respectively.
 
-im_sz      = [720 1280];
 % target_poss = [
 %     342.0, 592.67;
 %     327, 578.99998;
@@ -79,9 +81,11 @@ for i = 1:5
     target_pos = target_poss(i,:);
     
     %   RGB to Gray
-    if size(im,3) == 3
-        im = double(rgb2gray(im));
-    end;
+     if size(im,3) == 3
+         gray = double(rgb2gray(im));
+     else 
+         gray = im;
+     end
     
     %   image power-normalization to have zero mean and unit variance
     %   to make MCCF robust against lighting variations
@@ -92,12 +96,21 @@ for i = 1:5
     %   bandwidth of the Gaussian function is defined by "sigma".
     %   target_pos indicates the location of the target in the training
     %   image.
-    corr_rsp = gaussian_filter(size(im),sigma, target_pos);
+    corr_rsp = gaussian_filter(size(gray),sigma, target_pos);
     
     %   calculating dense HoG for the normalized face image. nbins,
     %   cell_size and block_size are the HoG parameters.
     %   Please refer to "calc_hog" for more details.
+%     hgs = calc_hog(powerNormalise(double(gray)), nbins, cell_size, block_size);
     hogs = calc_hog(nor_im, nbins, cell_size, block_size);
+%     [hogs, visualization] = extractHOGFeatures(nor_im, 'CellSize', [4 4], 'BlockSize', [8 8], 'NumBins', 5);
+    
+%     subplot(1,2,1);
+%     imshow(nor_im);
+%     subplot(1,2,2);
+%     plot(visualization);
+%     
+%     pause;
     
     %   applying cosine window on the HoG channels to reduce the
     %   high frequencies of image borders.

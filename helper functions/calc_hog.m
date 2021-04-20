@@ -51,6 +51,7 @@ theta = atan2(Gy, Gx);
 %   orientation bins
 %   theta : [0 ... pi], unsigned
 theta(find(theta<0)) = theta(find(theta<0)) + pi;
+theta = max(theta, [], 3);
 B = round((theta./pi)*(nbins-1))+1;
 for i=1:nbins
     G(:,:,i) =  (B==i);
@@ -58,6 +59,7 @@ end;
 
 %   V : image magnitude
 V = sqrt((Gx.*Gx) + (Gy.*Gy));
+V= max(V, [], 3);
 
 %   assigning each channel the magnitudes according to the bins.
 %   Initial forming of dense HoG without block and cell normalization.

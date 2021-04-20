@@ -17,6 +17,9 @@ clear all; close all; clc;
 
 addpath('helper functions/');
 imgsPath = 'kolya-frames/';
+im_sz      = [720 1280];
+% imgsPath = 'multiPie Face Dataset/';
+% im_sz      = [128 128];
 imgs     = dir(fullfile(imgsPath, '*.jpg'));
 
 %---------------------------------------------------
@@ -28,7 +31,6 @@ imgs     = dir(fullfile(imgsPath, '*.jpg'));
 %   the left and right eye are located at [40 32] and [40 96],
 %   respectively.
 
-im_sz      = [720 1280];
 
 %   HoG parameters. Pleae refer to "calc_hog" function for more details.
 nbins      = 5;
@@ -65,8 +67,9 @@ for i = 6:10
     org_im = im;
     
     %   RGB to Gray
+    gray = im;
     if size(im,3) == 3
-        im = double(rgb2gray(im));
+        gray = double(rgb2gray(im));
     end;
     
     %   image power-normalization to have zero mean and unit variance
@@ -91,7 +94,7 @@ for i = 6:10
     rsp_f  = sum(hogs_f.*filt_f,3);    
     
     %   correlation output in the spatial domain
-    rsp    = circshift(real(ifft2(rsp_f)), -size(im)/2);
+    rsp    = circshift(real(ifft2(rsp_f)), -size(gray)/2);
     
     
     %   predicting the right eye location. The global maximum over the
