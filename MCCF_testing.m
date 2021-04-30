@@ -33,7 +33,7 @@ imgs     = dir(fullfile(imgsPath, '*.jpg'));
 
 
 %   HoG parameters. Pleae refer to "calc_hog" function for more details.
-nbins      = 5;
+nbins      = 3;
 cell_size  = [6 6];
 block_size = [3 3];
 
@@ -79,11 +79,12 @@ for i = 6:10
     %   calculating dense HoG for the normalized face image. nbins,
     %   cell_size and block_size are the parameters required to
     %   compute HoG. Please refer to "calc_hog" for more details.
-    hogs = calc_hog(nor_im, nbins, cell_size, block_size);
+%     hogs = calc_hog(nor_im, nbins, cell_size, block_size);
     
     %   applying cosine window on the HoG channels to reduce the
     %   high frequencies of image borders.
-    hogs = bsxfun(@times, hogs, cos_window);
+%     hogs = bsxfun(@times, hogs, cos_window);
+    hogs = im;
     
     
     %   FFT2 of HoG feature channels.

@@ -48,7 +48,7 @@ target_poss = [
 ];
 
 %   HoG parameters. Pleae refer to "calc_hog" function for more details.
-nbins      = 5;
+nbins      = 3;
 cell_size  = [6 6];
 block_size = [3 3];
 
@@ -102,7 +102,7 @@ for i = 1:5
     %   cell_size and block_size are the HoG parameters.
     %   Please refer to "calc_hog" for more details.
 %     hgs = calc_hog(powerNormalise(double(gray)), nbins, cell_size, block_size);
-    hogs = calc_hog(nor_im, nbins, cell_size, block_size);
+%     hogs = calc_hog(nor_im, nbins, cell_size, block_size);
 %     [hogs, visualization] = extractHOGFeatures(nor_im, 'CellSize', [4 4], 'BlockSize', [8 8], 'NumBins', 5);
     
 %     subplot(1,2,1);
@@ -114,7 +114,9 @@ for i = 1:5
     
     %   applying cosine window on the HoG channels to reduce the
     %   high frequencies of image borders.
-    hogs = bsxfun(@times, hogs, cos_window);
+%     hogs = bsxfun(@times, hogs, cos_window);
+
+    hogs = im;
     
     
     %   FFT2 of HoG feature channels.
@@ -136,9 +138,9 @@ for i = 1:5
     else
         xxF = xxF + (diag_hogs_f'*diag_hogs_f);
         xyF = xyF + (diag_hogs_f'*corr_rsp_f);
-    end;
+    end
     
-end;
+end
 
 %   (2) closed-form filter learning
 
