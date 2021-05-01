@@ -1,8 +1,8 @@
 clear all; close all; clc;
 
 addpath('helper functions/');
-imgsPath = 'kolya-frames/';
-imgs     = dir(fullfile(imgsPath, '*.jpg'));
+imgsPath = 'kolya1-short-stabil/';
+imgs     = dir(fullfile(imgsPath, '*.PNG'));
 
 channels  = 3;
 sigma     = 2;
@@ -14,8 +14,8 @@ img = imread([imgsPath imgs(1).name]);
 roi = [576.16,336.52,35.39,11.88];
 w = roi(3);
 h = roi(4);
-WW = 99;
-HH = 99;
+WW = 259;
+HH = 259;
 dw = (WW - w) / 2;
 dh = (HH - h) / 2;
 rect = [roi(1) - dw, roi(2) - dh, WW, HH];
@@ -27,12 +27,12 @@ im_sz = size(img);
 im_sz = im_sz(1:2);
 cos_window = get_cosine_window(im_sz, 2);
 
-for i = 1:40      
+for i = 1:80      
     im = rand_warp(img);
     im = powerNormalise(double(im));
     
     corr_rsp = gaussian_filter(im_sz, sigma, center);
-    im = bsxfun(@times, im, cos_window);
+%     im = bsxfun(@times, im, cos_window);
     hogs_f = fft2(im);
     corr_rsp_f = reshape(fft2(corr_rsp), [],1);
     diag_hogs_f = spdiags(reshape(hogs_f, prod(im_sz), []), [0:channels-1]* prod(im_sz), prod(im_sz), prod(im_sz)*(channels));
@@ -64,6 +64,7 @@ end
 
 % pause;
 prevPos = [rect(1) + WW / 2, rect(2) + HH / 2];
+vv = [];
 
 %   testing loop starts here!
 for i = 2:10    
@@ -71,6 +72,7 @@ for i = 2:10
     img = imread([imgsPath imgs(i).name]);
     img = imcrop(img, rect);
     im = powerNormalise(double(img));
+%     im = bsxfun(@times, im, cos_window);
     im_sz = size(im);
     im_sz = im_sz(1:2);
 
@@ -81,8 +83,19 @@ for i = 2:10
     [x y] = find(rsp == max(max(rsp)));
     newAbs = [rect(1) + x, rect(2) + y];
     v = newAbs - prevPos;
+    if size(vv, 2) > 0
+        vv(2,:) = vv(1,:);
+    end
+%     if size(vv, 2) > 1
+%         vv(3,:) = vv(2,:);
+%     end
+    vv(1,:) = v;
+    nextV = mean(vv, 1);
+
+    disp([newAbs, prevPos, v]);
     prevPos = newAbs;
-    nextAbs = newAbs + v;    
+    nextAbs = newAbs + nextV;
+    disp(nextAbs);
     
     rect = [nextAbs(1) - WW / 2, nextAbs(2) - HH / 2, WW, HH];
 
@@ -94,9 +107,9 @@ for i = 2:10
     
     subplot(1,2,2);
     imagesc(img); colormap gray;axis image ; axis off;title ('image');             
-    hold on; plot(96,40, 'ob','MarkerSize',10,'LineWidth',3);
+%     hold on; plot(96,40, 'ob','MarkerSize',10,'LineWidth',3);
     hold on; plot(y,x, '*r','MarkerSize',10,'LineWidth',2);
-%     pause(.05);
-    pause;        
+    pause(0.5);
+%     pause;        
 end
 % close aviobj;

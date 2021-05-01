@@ -27,7 +27,7 @@ im_sz = size(img);
 im_sz = im_sz(1:2);
 cos_window = get_cosine_window(im_sz, 2);
 
-for i = 1:20      
+for i = 1:40      
     im = rand_warp(img);
     im = powerNormalise(double(im));
     
@@ -63,6 +63,8 @@ for j = 1: channels
 end
 
 % pause;
+prevPos = [rect(1) + WW / 2, rect(2) + HH / 2];
+vv = [];
 
 %   testing loop starts here!
 for i = 2:10    
@@ -78,12 +80,15 @@ for i = 2:10
     rsp    = circshift(real(ifft2(rsp_f)), -im_sz/2);
     
     [x y] = find(rsp == max(max(rsp)));
-    absX = rect(1) + x;
-    absY = rect(2) + y;
-    dx = x - WW / 2;
-    dy = y - HH  /2;
+    newAbs = [rect(1) + x, rect(2) + y];
+    v = newAbs - prevPos;
+    vv(:,2) = vv(:,1);
+    disp([newAbs, prevPos, v]);
+    prevPos = newAbs;
+    nextAbs = newAbs + v;    
+    disp(nextAbs);
     
-    rect = [rect(1) + x - WW / 2, rect(2) + y - HH / 2, WW, HH];
+    rect = [nextAbs(1) - WW / 2, nextAbs(2) - HH / 2, WW, HH];
 
     proc_time = proc_time + toc;
     
@@ -93,7 +98,7 @@ for i = 2:10
     
     subplot(1,2,2);
     imagesc(img); colormap gray;axis image ; axis off;title ('image');             
-    hold on; plot(96,40, 'ob','MarkerSize',10,'LineWidth',3);
+%     hold on; plot(96,40, 'ob','MarkerSize',10,'LineWidth',3);
     hold on; plot(y,x, '*r','MarkerSize',10,'LineWidth',2);
 %     pause(.05);
     pause;        
