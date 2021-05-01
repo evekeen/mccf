@@ -2,6 +2,11 @@ clear all; close all; clc;
 
 addpath('helper functions/');
 imgsPath = 'kolya1-short-stabil/';
+roi = [576.16,336.52,35.39,11.88];
+
+imgsPath = 'kolya2-late-stabil/';
+roi = [531.05,645.57,14.16,4.45];
+
 imgs     = dir(fullfile(imgsPath, '*.PNG'));
 
 channels  = 3;
@@ -11,11 +16,13 @@ proc_time = 0;
 
 img = imread([imgsPath imgs(1).name]);
 
-roi = [576.16,336.52,35.39,11.88];
 w = roi(3);
 h = roi(4);
-WW = 199;
-HH = 199;
+WW = floor(roi(3) * 4);
+if rem(WW, 2) == 0
+    WW = WW + 1;
+end
+HH = WW;
 dw = (WW - w) / 2;
 dh = (HH - h) / 2;
 rect = [roi(1) - dw, roi(2) - dh, WW, HH];
@@ -27,7 +34,7 @@ im_sz = size(img);
 im_sz = im_sz(1:2);
 
 model = Model(im_sz);
-[filt_f, filt] = model.train(img, center, 40);
+[filt_f, filt] = model.train(img, center, 200);
 
 for j = 1: channels
     subplot(2,3,j) ;imagesc(real(filt(:,:,j)));colormap gray;
@@ -39,29 +46,30 @@ for j = 1: channels
 end
 
 pause(0.3);
+pause
 prevPos = [rect(1) + WW / 2, rect(2) + HH / 2];
 vv = [];
 pos = [];
 T = 1;
 
 %   testing loop starts here!
-for i = 2:40    
+for i = 2:100    
     tic;
     img = imread([imgsPath imgs(i).name]);
     img = imcrop(img, rect);
     im = powerNormalise(double(img));
-%     im = bsxfun(@times, im, cos_window);
+    im = bsxfun(@times, im, model.cos_window);
     im_sz = size(im);
     im_sz = im_sz(1:2);
 
-    hogs_f = fft2(im);
-    rsp_f  = sum(hogs_f.*filt_f,3);    
+    im_f = fft2(im);
+    rsp_f  = sum(im_f.*filt_f,3);    
     rsp    = circshift(real(ifft2(rsp_f)), -im_sz/2);
     
     [y x] = find(rsp == max(max(rsp)));
     
     % ---- more training --------
-    [filt_f, filt] = model.train(img, [x, y], 1);    
+    [filt_f, filt] = model.train(img, [x, y], 30);    
     %----------------------------
     
     newAbs = [rect(1) + x, rect(2) + y];
@@ -90,10 +98,10 @@ for i = 2:40
     imagesc(img); colormap gray;axis image ; axis off;title ('image');             
 %     hold on; plot(96,40, 'ob','MarkerSize',10,'LineWidth',3);
     hold on; plot(x, y, '*r','MarkerSize',10,'LineWidth',2);
-    pause(0.3);
-    if i > 2 && diff(1) > 5
+    pause(0.01);
+    if i > 2 && diff(1) > 8
         disp(diff)
-        pause
+%         pause
     end
 end
 % close aviobj;

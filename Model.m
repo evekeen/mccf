@@ -5,7 +5,7 @@ classdef Model < handle
         xyF
         cos_window
         
-        sigma  = 2
+        sigma  = 1
         lambda = 0.1
     end
     methods
@@ -22,10 +22,10 @@ classdef Model < handle
                 im_sz = im_sz(1:2);
 
                 corr_rsp = gaussian_filter(im_sz, obj.sigma, center);
-            %     im = bsxfun(@times, im, cos_window);
-                hogs_f = fft2(im);
+                im = bsxfun(@times, im, obj.cos_window);
+                im_f = fft2(im);
                 corr_rsp_f = reshape(fft2(corr_rsp), [],1);
-                diag_hogs_f = spdiags(reshape(hogs_f, prod(im_sz), []), [0:channels-1]* prod(im_sz), prod(im_sz), prod(im_sz)*(channels));
+                diag_hogs_f = spdiags(reshape(im_f, prod(im_sz), []), [0:channels-1]* prod(im_sz), prod(im_sz), prod(im_sz)*(channels));
                 if obj.initialized == false
                     obj.initialized = true;
                     obj.xxF = diag_hogs_f'*diag_hogs_f;
