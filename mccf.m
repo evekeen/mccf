@@ -14,8 +14,8 @@ img = imread([imgsPath imgs(1).name]);
 roi = [576.16,336.52,35.39,11.88];
 w = roi(3);
 h = roi(4);
-WW = 259;
-HH = 259;
+WW = 119;
+HH = 119;
 dw = (WW - w) / 2;
 dh = (HH - h) / 2;
 rect = [roi(1) - dw, roi(2) - dh, WW, HH];
@@ -65,9 +65,11 @@ end
 % pause;
 prevPos = [rect(1) + WW / 2, rect(2) + HH / 2];
 vv = [];
+pos = [];
+T = 1;
 
 %   testing loop starts here!
-for i = 2:10    
+for i = 2:40    
     tic;
     img = imread([imgsPath imgs(i).name]);
     img = imcrop(img, rect);
@@ -80,36 +82,51 @@ for i = 2:10
     rsp_f  = sum(hogs_f.*filt_f,3);    
     rsp    = circshift(real(ifft2(rsp_f)), -im_sz/2);
     
-    [x y] = find(rsp == max(max(rsp)));
-    newAbs = [rect(1) + x, rect(2) + y];
-    v = newAbs - prevPos;
-    if size(vv, 2) > 0
-        vv(2,:) = vv(1,:);
-    end
-%     if size(vv, 2) > 1
-%         vv(3,:) = vv(2,:);
-%     end
-    vv(1,:) = v;
-    nextV = mean(vv, 1);
+    [y x] = find(rsp == max(max(rsp)));
+    % ---- more training --------
+    corr_rsp = gaussian_filter(im_sz, sigma, [x, y]);
+    corr_rsp_f = reshape(fft2(corr_rsp), [],1);
+    diag_hogs_f = spdiags(reshape(hogs_f, prod(im_sz), []), [0:channels-1]* prod(im_sz), prod(im_sz), prod(im_sz)*(channels));    
+    xxF = xxF + (diag_hogs_f'*diag_hogs_f);
+    xyF = xyF + (diag_hogs_f'*corr_rsp_f);
+    I     = speye(size(xxF,1));
+    filtF = (xxF + I*lambda)\xyF;
+    filtF = (reshape(filtF, im_sz(1), im_sz(2), []));
+    filt  = real(ifft2(filtF));
+    filt  = circshift(filt, floor(im_sz/2));
+    filt_f = fft2(filt);
 
-    disp([newAbs, prevPos, v]);
-    prevPos = newAbs;
-    nextAbs = newAbs + nextV;
-    disp(nextAbs);
+    %----------------------------
     
-    rect = [nextAbs(1) - WW / 2, nextAbs(2) - HH / 2, WW, HH];
+    newAbs = [rect(1) + x, rect(2) + y];
+    if i == 2
+        v = newAbs - prevPos;
+        initialState = [
+            rect(1) + center(1); v(1); 0;
+            rect(2) + center(2); v(2); 0
+        ];
+        KF = trackingKF('MotionModel', '2D Constant Acceleration', 'State', initialState);
+        predict(KF, T);            
+    else        
+        diff = newAbs - [predicted(1) predicted(4)];        
+    end      
+
+    correct(KF, newAbs);
+    predicted = predict(KF, T);    
+    
+    rect = [predicted(1) - WW / 2, predicted(4) - HH / 2, WW, HH];
 
     proc_time = proc_time + toc;
-    
-    %   draw ground-truth (blue) and predicited (red) boxes
     subplot(1,2,1);
     imagesc(rsp); colormap gray;axis image ; axis off;title ('Correlation rsp.');
     
     subplot(1,2,2);
     imagesc(img); colormap gray;axis image ; axis off;title ('image');             
 %     hold on; plot(96,40, 'ob','MarkerSize',10,'LineWidth',3);
-    hold on; plot(y,x, '*r','MarkerSize',10,'LineWidth',2);
-    pause(0.5);
-%     pause;        
+    hold on; plot(x, y, '*r','MarkerSize',10,'LineWidth',2);
+    pause(0.3);
+    if i > 2 && diff(1) > 5
+        pause
+    end
 end
 % close aviobj;
