@@ -11,7 +11,9 @@ classdef Model < handle
     methods
         function obj = Model(im_sz)
             obj.cos_window = get_cosine_window(im_sz, 2);
-        end                        
+        end        
+        
+        function setSigm
         
         function [filt_f, filt] = train(obj, img, center, iterations)
             channels  = 3;            

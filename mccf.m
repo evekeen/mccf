@@ -4,21 +4,19 @@ addpath('helper functions/');
 imgsPath = 'kolya1-short-stabil/';
 roi = [576.16,336.52,35.39,11.88];
 
-imgsPath = 'kolya2-late-stabil/';
-roi = [531.05,645.57,14.16,4.45];
+% imgsPath = 'kolya2-late-stabil/';
+% roi = [531.05,645.57,14.16,4.45];
 
 imgs     = dir(fullfile(imgsPath, '*.PNG'));
 
 channels  = 3;
-sigma     = 2;
-lambda    = 0.1;
 proc_time = 0;
 
 img = imread([imgsPath imgs(1).name]);
 
 w = roi(3);
 h = roi(4);
-WW = floor(roi(3) * 4);
+WW = floor(roi(3) * 1.8);
 if rem(WW, 2) == 0
     WW = WW + 1;
 end
@@ -52,6 +50,8 @@ vv = [];
 pos = [];
 T = 1;
 
+origSigma = model.sigma;
+
 %   testing loop starts here!
 for i = 2:100    
     tic;
@@ -69,7 +69,8 @@ for i = 2:100
     [y x] = find(rsp == max(max(rsp)));
     
     % ---- more training --------
-    [filt_f, filt] = model.train(img, [x, y], 30);    
+    model.sigma = origSigma - i * 0.01;
+    [filt_f, filt] = model.train(img, [x, y], 50);    
     %----------------------------
     
     newAbs = [rect(1) + x, rect(2) + y];
