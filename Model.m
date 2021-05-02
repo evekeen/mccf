@@ -5,7 +5,7 @@ classdef Model < handle
         xyF
         cos_window
         
-        sigma  = 0.6
+        sigma  = 1
         lambda = 0.1
     end
     methods
@@ -14,13 +14,13 @@ classdef Model < handle
         end                        
         
         function [filt_f, filt] = train(obj, img, center, iterations)
-            channels  = 3;            
+            channels  = 3;                      
+            im_sz = size(img);
+            im_sz = im_sz(1:2);
 
             for i = 1:iterations      
                 im = rand_warp(img);
-                im = powerNormalise(double(im));
-                im_sz = size(img);
-                im_sz = im_sz(1:2);
+                im = powerNormalise(double(im));                
 
                 corr_rsp = gaussian_filter(im_sz, obj.sigma, center);
                 im = bsxfun(@times, im, obj.cos_window);
