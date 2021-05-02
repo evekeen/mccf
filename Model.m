@@ -5,7 +5,7 @@ classdef Model < handle
         xyF
         cos_window
         
-        sigma  = 0.7
+        sigma  = 0.6
         lambda = 0.1
     end
     methods

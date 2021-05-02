@@ -3,6 +3,8 @@ clear all; close all; clc;
 addpath('helper functions/');
 imgsPath = 'kolya1-short-stabil/';
 roi = [576.16,336.52,35.39,11.88];
+roi = [460.46,208.21,12.66,3.55];
+start = 19
 
 % imgsPath = 'kolya2-late-stabil/';
 % roi = [531.05,645.57,14.16,4.45];
@@ -12,11 +14,11 @@ imgs     = dir(fullfile(imgsPath, '*.PNG'));
 channels  = 3;
 proc_time = 0;
 
-img = imread([imgsPath imgs(1).name]);
+img = imread([imgsPath imgs(start).name]);
 
 w = roi(3);
 h = roi(4);
-WW = floor(roi(3) * 1.8);
+WW = floor(roi(3) * 3);
 if rem(WW, 2) == 0
     WW = WW + 1;
 end
@@ -53,7 +55,7 @@ T = 1;
 origSigma = model.sigma;
 
 %   testing loop starts here!
-for i = 2:100    
+for i = start+1:100    
     tic;
     img = imread([imgsPath imgs(i).name]);
     img = imcrop(img, rect);
@@ -69,12 +71,12 @@ for i = 2:100
     [y x] = find(rsp == max(max(rsp)));
     
     % ---- more training --------
-    model.sigma = origSigma - i * 0.01;
+%     model.sigma = origSigma - i * 0.01;
     [filt_f, filt] = model.train(img, [x, y], 50);    
     %----------------------------
     
     newAbs = [rect(1) + x, rect(2) + y];
-    if i == 2
+    if i == start+1
         v = newAbs - prevPos;
         initialState = [
             rect(1) + center(1); v(1); 0;
@@ -100,7 +102,7 @@ for i = 2:100
 %     hold on; plot(96,40, 'ob','MarkerSize',10,'LineWidth',3);
     hold on; plot(x, y, '*r','MarkerSize',10,'LineWidth',2);
     pause(0.01);
-    if i > 2 && diff(1) > 8
+    if i > start+1 && diff(1) > 8
         disp(diff)
 %         pause
     end
